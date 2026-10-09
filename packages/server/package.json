@@ -1,0 +1,22 @@
+{
+  "name": "@tabledux/server",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc -p .",
+    "dev": "tsx watch src/main.ts",
+    "typecheck": "tsc -p . --noEmit"
+  },
+  "dependencies": {
+    "@fastify/static": "^10.1.0",
+    "@fastify/websocket": "^11.0.0",
+    "@tabledux/core": "*",
+    "@tabledux/wled": "*",
+    "fastify": "^5.6.0",
+    "zod": "^4.1.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.20.0"
+  }
+}
