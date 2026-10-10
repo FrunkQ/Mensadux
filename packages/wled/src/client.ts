@@ -8,6 +8,8 @@
  *   GET  /json/info     device identity, firmware, LED count
  *   GET  /json/state    current state (on, bri, segments…)
  *   GET  /presets.json  preset library keyed by id
+ *   GET  /json/eff      effect names (index = fx id)
+ *   GET  /json/pal      palette names (index = pal id)
  *   POST /json/state    apply state, or {ps: id} to recall a preset
  */
 
@@ -55,6 +57,16 @@ export class WledClient {
       // Preset 0 is WLED's internal default slot, and empty objects are unused slots.
       .filter((p) => p.id > 0 && p.name !== '')
       .sort((a, b) => a.id - b.id);
+  }
+
+  /** Effect names; the index is the fx id. */
+  effects(): Promise<string[]> {
+    return this.request<string[]>('GET', '/json/eff');
+  }
+
+  /** Palette names; the index is the pal id. */
+  palettes(): Promise<string[]> {
+    return this.request<string[]>('GET', '/json/pal');
   }
 
   setState(state: WledState): Promise<unknown> {

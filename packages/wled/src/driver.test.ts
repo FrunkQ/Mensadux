@@ -61,3 +61,14 @@ describe('WledDriver', () => {
     await expect(d.capture()).rejects.toThrow(/HTTP 404/);
   });
 });
+
+describe('WledDriver.catalog', () => {
+  it('returns effect and palette names', async () => {
+    const d = new WledDriver(
+      't',
+      'x',
+      new WledClient('x', 1000, fakeFetch({ '/json/eff': ['Solid', 'Blink'], '/json/pal': ['Default', 'Lava'] })),
+    );
+    expect(await d.catalog()).toEqual({ effects: ['Solid', 'Blink'], palettes: ['Default', 'Lava'] });
+  });
+});

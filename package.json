@@ -6,17 +6,19 @@
   "workspaces": [
     "packages/core",
     "packages/wled",
+    "packages/homeassistant",
     "packages/server",
     "packages/web"
   ],
   "scripts": {
-    "build": "npm run build -w @tabledux/core && npm run build -w @tabledux/wled && npm run build -w @tabledux/server && npm run build -w @tabledux/web",
-    "dev": "npm run build -w @tabledux/core && npm run build -w @tabledux/wled && npm run dev -w @tabledux/server",
+    "build": "npm run build -w @tabledux/core && npm run build -w @tabledux/wled && npm run build -w @tabledux/homeassistant && npm run build -w @tabledux/server && npm run build -w @tabledux/web",
+    "dev": "npm run build -w @tabledux/core && npm run build -w @tabledux/wled && npm run build -w @tabledux/homeassistant && npm run dev -w @tabledux/server",
     "dev:web": "npm run dev -w @tabledux/web",
     "start": "node packages/server/dist/main.js",
     "test": "vitest run",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "fake-wled": "node tools/fake-wled.mjs"
+    "fake-wled": "node tools/fake-wled.mjs",
+    "fake-ha": "node tools/fake-ha.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",

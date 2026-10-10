@@ -20,17 +20,42 @@ export interface Binding {
 export interface Device {
   id: string;
   name: string;
-  kind: 'wled';
+  kind: 'wled' | 'homeassistant';
   url: string;
 }
 export interface Scene {
   id: string;
   name: string;
   tags: string[];
-  lights: Record<string, { state: Record<string, unknown> } | { preset: number }>;
+  lights: Record<string, LightTarget>;
+  actions: Action[];
 }
+export type LightTarget = { state: WledState } | { preset: number };
+export interface WledSegment {
+  id: number;
+  start?: number;
+  stop?: number;
+  on?: boolean;
+  bri?: number;
+  col?: number[][];
+  fx?: number;
+  sx?: number;
+  ix?: number;
+  pal?: number;
+  [key: string]: unknown;
+}
+export interface WledState {
+  on?: boolean;
+  bri?: number;
+  seg?: WledSegment[];
+  [key: string]: unknown;
+}
+export type DeviceCatalog =
+  | { kind: 'wled'; effects: string[]; palettes: string[]; presets: { id: number; name: string }[] }
+  | { kind: 'homeassistant'; entities: { entity_id: string; name: string; domain: string }[] };
 export interface DeviceStatus extends Device {
   online: boolean;
+  hasToken?: boolean;
   error?: string;
   info?: { name: string; version: string; ledCount: number; presets: { id: number; name: string }[] };
 }

@@ -1,4 +1,4 @@
-import type { LightDriver, LightInfo, LightTarget } from '@tabledux/core';
+import type { LightCatalog, LightDriver, LightInfo, LightTarget } from '@tabledux/core';
 import { WledClient, type WledState } from './client.js';
 
 /**
@@ -38,6 +38,11 @@ export class WledDriver implements LightDriver {
   async describe(): Promise<LightInfo> {
     const [info, presets] = await Promise.all([this.client.info(), this.client.presets().catch(() => [])]);
     return { name: info.name, version: info.ver, ledCount: info.leds?.count ?? 0, presets };
+  }
+
+  async catalog(): Promise<LightCatalog> {
+    const [effects, palettes] = await Promise.all([this.client.effects(), this.client.palettes()]);
+    return { effects, palettes };
   }
 
   async capture(): Promise<LightTarget> {

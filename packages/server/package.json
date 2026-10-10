@@ -12,6 +12,7 @@
     "@fastify/static": "^10.1.0",
     "@fastify/websocket": "^11.0.0",
     "@tabledux/core": "*",
+    "@tabledux/homeassistant": "*",
     "@tabledux/wled": "*",
     "fastify": "^5.6.0",
     "zod": "^4.1.0"

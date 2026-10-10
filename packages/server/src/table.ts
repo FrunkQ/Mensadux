@@ -3,11 +3,14 @@ import {
   EventBus,
   slugId,
   type ActionResult,
+  type LightCatalog,
   type LightDriver,
+  type LightTarget,
   type Scene,
   type TableEvent,
 } from '@tabledux/core';
 import { WledDriver } from '@tabledux/wled';
+import { HaClient, defaultService, type HaEntity } from '@tabledux/homeassistant';
 import type { ConfigStore } from './config-store.js';
 
 export interface DeviceStatus {
@@ -18,7 +21,14 @@ export interface DeviceStatus {
   online: boolean;
   error?: string;
   info?: Awaited<ReturnType<LightDriver['describe']>>;
+  /** Home Assistant only: whether a token is saved (the token itself is never sent out). */
+  hasToken?: boolean;
 }
+
+/** What the scene editor can pick from on one device. */
+export type DeviceCatalog =
+  | ({ kind: 'wled' } & LightCatalog & { presets: { id: number; name: string }[] })
+  | { kind: 'homeassistant'; entities: HaEntity[] };
 
 export interface LogEntry {
   event: TableEvent;
@@ -40,6 +50,7 @@ export class Table {
   readonly bus: EventBus;
   readonly engine: BindingsEngine;
   private drivers = new Map<string, LightDriver>();
+  private ha = new Map<string, HaClient>();
   private status = new Map<string, DeviceStatus>();
   private log: LogEntry[] = [];
   mode = 'idle';
@@ -81,26 +92,58 @@ export class Table {
 
   rebuildDrivers(): void {
     this.drivers.clear();
+    this.ha.clear();
     for (const d of this.config.devices) {
       if (d.kind === 'wled') this.drivers.set(d.id, new WledDriver(d.id, d.url));
+      if (d.kind === 'homeassistant') this.ha.set(d.id, new HaClient(d.url, this.config.tokenFor(d.id)));
     }
-    for (const id of [...this.status.keys()]) if (!this.drivers.has(id)) this.status.delete(id);
+    const ids = new Set(this.config.devices.map((d) => d.id));
+    for (const id of [...this.status.keys()]) if (!ids.has(id)) this.status.delete(id);
   }
 
   async refreshDevices(): Promise<void> {
     await Promise.all(
       this.config.devices.map(async (d) => {
-        const driver = this.drivers.get(d.id);
-        const base = { id: d.id, name: d.name, kind: d.kind, url: d.url };
-        if (!driver) return;
+        const base: DeviceStatus = { id: d.id, name: d.name, kind: d.kind, url: d.url, online: false };
         try {
-          this.status.set(d.id, { ...base, online: true, info: await driver.describe() });
+          const driver = this.drivers.get(d.id);
+          const ha = this.ha.get(d.id);
+          if (driver) this.status.set(d.id, { ...base, online: true, info: await driver.describe() });
+          if (ha) {
+            base.hasToken = this.config.tokenFor(d.id) !== '';
+            await ha.ping();
+            this.status.set(d.id, { ...base, online: true });
+          }
         } catch (err) {
           this.status.set(d.id, { ...base, online: false, error: (err as Error).message });
         }
       }),
     );
     this.changed();
+  }
+
+  async catalog(deviceId: string): Promise<DeviceCatalog> {
+    const driver = this.drivers.get(deviceId);
+    if (driver) {
+      const [cat, info] = await Promise.all([driver.catalog(), driver.describe()]);
+      return { kind: 'wled', ...cat, presets: info.presets };
+    }
+    const ha = this.ha.get(deviceId);
+    if (ha) return { kind: 'homeassistant', entities: await ha.entities() };
+    throw new Error(`No device "${deviceId}"`);
+  }
+
+  /** Shows a look on one device without saving anything: the scene editor's live preview. */
+  async preview(deviceId: string, target: LightTarget): Promise<void> {
+    const driver = this.drivers.get(deviceId);
+    if (!driver) throw new Error(`No light device "${deviceId}"`);
+    await driver.apply(target);
+  }
+
+  async captureDevice(deviceId: string): Promise<LightTarget> {
+    const driver = this.drivers.get(deviceId);
+    if (!driver) throw new Error(`No light device "${deviceId}"`);
+    return driver.capture();
   }
 
   // ── Scenes ─────────────────────────────────────────────────
@@ -127,6 +170,7 @@ export class Table {
       name,
       tags: [],
       lights,
+      actions: [],
     };
     await this.config.saveScenes([...this.config.scenes, scene]);
     this.changed();
@@ -148,6 +192,11 @@ export class Table {
         }
       }),
     );
+    const trigger: TableEvent = { type: 'scene.activated', source: 'scene', data: { scene: id }, ts: Date.now() };
+    for (const action of scene.actions) {
+      const r = await this.engine.run(`scene:${id}`, action, trigger);
+      if (!r.ok) errors.push(`${action.type}: ${r.error}`);
+    }
     this.activeSceneId = id;
     this.changed();
     if (errors.length) throw new Error(`Scene "${scene.name}" partly failed: ${errors.join('; ')}`);
@@ -174,6 +223,15 @@ export class Table {
       const preset = Number(p.preset);
       if (!Number.isInteger(preset) || preset < 1) throw new Error('preset must be a whole number from 1 up');
       await driver.apply({ preset });
+    });
+    this.engine.registerAction('ha.call', async (p) => {
+      const ha = this.ha.get(requireString(p, 'device'));
+      if (!ha) throw new Error(`No Home Assistant device "${String(p.device)}"`);
+      const entity = typeof p.entity === 'string' && p.entity ? p.entity : undefined;
+      const service = typeof p.service === 'string' && p.service ? p.service : entity ? defaultService(entity) : '';
+      if (!service) throw new Error('Needs an entity or a service');
+      const data = p.data && typeof p.data === 'object' ? (p.data as Record<string, unknown>) : {};
+      await ha.call(service, entity, data);
     });
   }
 
