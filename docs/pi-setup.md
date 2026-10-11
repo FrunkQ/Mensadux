@@ -39,7 +39,7 @@ sudo systemctl enable --now tabledux
 journalctl -u tabledux -f    # logs
 ```
 
-Config lives in `/var/lib/tabledux` (`devices.json`, `scenes.json`, `bindings.json`). Back that folder up and you've backed up the table.
+Config lives in `/var/lib/tabledux` (`devices.json`, `scenes.json`, `bindings.json`). Back that folder up and you've backed up the table. Access tokens (Home Assistant) are kept separately in `secrets.json` in the same folder, readable only by the service user, and are never sent to the web UI.
 
 ## Settings
 

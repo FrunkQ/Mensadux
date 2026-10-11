@@ -3,6 +3,7 @@ import {
   ActionSchema,
   BindingSchema,
   DeviceSchema,
+  LightTargetSchema,
   SceneSchema,
   TableEventSchema,
   slugId,
@@ -40,12 +41,38 @@ export function registerApi(app: FastifyInstance, table: Table): void {
     await table.refreshDevices();
     return table.snapshot().devices;
   });
+  const deviceId = (req: { params: unknown }) => (req.params as { id: string }).id;
+  app.get('/api/devices/:id/catalog', async (req) => table.catalog(deviceId(req)));
+  app.post('/api/devices/:id/capture', async (req) => table.captureDevice(deviceId(req)));
+  app.post('/api/devices/:id/preview', async (req) => {
+    await table.preview(deviceId(req), parse(LightTargetSchema, req.body));
+    return { ok: true };
+  });
+  // Write-only: tokens are saved here and never returned by any route.
+  app.put('/api/devices/:id/token', async (req) => {
+    const id = deviceId(req);
+    if (!config.devices.some((d) => d.id === id)) throw notFound(`No device "${id}"`);
+    const { token } = parse(z.object({ token: z.string() }), req.body);
+    await config.saveToken(id, token.trim());
+    table.rebuildDrivers();
+    await table.refreshDevices();
+    return { ok: true };
+  });
 
   // Scenes
   app.get('/api/scenes', async () => config.scenes);
   app.put('/api/scenes', async (req) => {
     await config.saveScenes(parse(z.array(SceneSchema), req.body));
     return config.scenes;
+  });
+  // Create or replace one scene (the editor's Save). A new scene without an id gets one from its name.
+  app.post('/api/scenes', async (req) => {
+    const raw = parse(SceneSchema.partial({ id: true }), req.body);
+    const id = raw.id ?? slugId(raw.name, config.scenes.map((s) => s.id));
+    const scene = { ...raw, id };
+    const exists = config.scenes.some((s) => s.id === id);
+    await config.saveScenes(exists ? config.scenes.map((s) => (s.id === id ? scene : s)) : [...config.scenes, scene]);
+    return config.scenes.find((s) => s.id === id);
   });
   app.post('/api/scenes/capture', async (req) => {
     const { name, devices } = parse(
@@ -96,4 +123,8 @@ export function registerApi(app: FastifyInstance, table: Table): void {
 
 function badRequest(message: string): Error & { statusCode: number } {
   return Object.assign(new Error(message), { statusCode: 400 });
+}
+
+function notFound(message: string): Error & { statusCode: number } {
+  return Object.assign(new Error(message), { statusCode: 404 });
 }

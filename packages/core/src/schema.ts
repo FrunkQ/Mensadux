@@ -42,7 +42,16 @@ export const WledDeviceSchema = z.object({
 });
 export type WledDevice = z.infer<typeof WledDeviceSchema>;
 
-export const DeviceSchema = z.discriminatedUnion('kind', [WledDeviceSchema]);
+/** A Home Assistant instance. Its access token is kept in secrets.json, never here. */
+export const HomeAssistantDeviceSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().default(''),
+  kind: z.literal('homeassistant'),
+  url: z.string().min(1),
+});
+export type HomeAssistantDevice = z.infer<typeof HomeAssistantDeviceSchema>;
+
+export const DeviceSchema = z.discriminatedUnion('kind', [WledDeviceSchema, HomeAssistantDeviceSchema]);
 export type Device = z.infer<typeof DeviceSchema>;
 
 /** What one light output should show for a scene: a full captured state, or a preset on the device. */
@@ -58,9 +67,16 @@ export const SceneSchema = z.object({
   tags: z.array(z.string()).default([]),
   /** Keyed by device id. Devices not listed are left alone. */
   lights: z.record(z.string(), LightTargetSchema).default({}),
+  /** Any other actions to run when the scene starts, e.g. Home Assistant calls. */
+  actions: z.array(ActionSchema).default([]),
 });
 export type Scene = z.infer<typeof SceneSchema>;
 
 export const DevicesFileSchema = z.object({ devices: z.array(DeviceSchema).default([]) });
 export const ScenesFileSchema = z.object({ scenes: z.array(SceneSchema).default([]) });
 export const BindingsFileSchema = z.object({ bindings: z.array(BindingSchema).default([]) });
+/** Per-device secrets such as access tokens, keyed by device id. Never sent back to clients. */
+export const SecretsFileSchema = z.object({
+  devices: z.record(z.string(), z.object({ token: z.string().optional() })).default({}),
+});
+export type Secrets = z.infer<typeof SecretsFileSchema>;

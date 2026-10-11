@@ -25,6 +25,7 @@
     'lights.off': 'All lights off',
     'wled.preset': 'WLED preset',
     'mode.set': 'Switch mode',
+    'ha.call': 'Home Assistant',
   };
 
   // Capture the next key from the live event log while recording.
@@ -123,6 +124,11 @@
                 {#each devices as d}<option value={d.id}>{d.name}</option>{/each}
               </select>
               <input type="number" min="1" placeholder="preset" bind:value={a.params.preset} oninput={touch} style="width: 6rem" />
+            {:else if a.type === 'ha.call'}
+              <select bind:value={a.params.device} onchange={touch}>
+                {#each devices.filter((d) => d.kind === 'homeassistant') as d}<option value={d.id}>{d.name}</option>{/each}
+              </select>
+              <input placeholder="entity, e.g. scene.tavern" bind:value={a.params.entity} oninput={touch} />
             {:else if a.type === 'mode.set'}
               <input placeholder="mode, e.g. idle" bind:value={a.params.mode} oninput={touch} />
             {/if}

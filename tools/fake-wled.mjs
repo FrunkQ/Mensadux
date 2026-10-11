@@ -45,6 +45,8 @@ createServer((req, res) => {
     if (req.url === '/json/info') return send({ name: 'Fake WLED', ver: '0.15.0', leds: { count: 854 } });
     if (req.url === '/json/state' && req.method === 'GET') return send(state);
     if (req.url === '/presets.json') return send(presets);
+    if (req.url === '/json/eff') return send(['Solid', 'Blink', 'Breathe', 'Wipe', 'RSVD', 'Rainbow', 'Fire 2012', 'Pacifica']);
+    if (req.url === '/json/pal') return send(['Default', '* Random Cycle', 'Party', 'Lava', 'Ocean', 'Forest']);
     if (req.url === '/json/state' && req.method === 'POST') {
       merge(JSON.parse(body || '{}'));
       console.log('state <-', body);

@@ -2,6 +2,7 @@
   import { api } from '../api';
   import { live } from '../live.svelte';
   import type { Scene } from '../types';
+  import SceneEditor from '../editor/SceneEditor.svelte';
 
   let scenes = $state<Scene[]>([]);
   let newName = $state('');
@@ -9,6 +10,20 @@
   let busy = $state(false);
   let renaming = $state<string | null>(null);
   let renameTo = $state('');
+  /** undefined = list view, null = new scene, Scene = editing that scene. */
+  let editing = $state<Scene | null | undefined>(undefined);
+
+  async function closeEditor() {
+    editing = undefined;
+    scenes = await api.scenes();
+  }
+
+  function duplicate(s: Scene) {
+    run(async () => {
+      const copy = await api.saveScene({ ...$state.snapshot(s), id: undefined, name: `${s.name} copy` });
+      scenes = [...scenes, copy];
+    });
+  }
 
   api.scenes().then((s) => (scenes = s));
 
@@ -44,9 +59,11 @@
   }
 
   function lightsSummary(s: Scene): string {
-    return Object.entries(s.lights)
-      .map(([dev, t]) => ('preset' in t ? `${dev}: preset ${t.preset}` : `${dev}: ${segCount(t.state)} segment(s)`))
-      .join(' · ');
+    const parts = Object.entries(s.lights).map(([dev, t]) =>
+      'preset' in t ? `${dev}: preset ${t.preset}` : `${dev}: ${segCount(t.state)} segment(s)`,
+    );
+    if (s.actions.length) parts.push(`${s.actions.length} other action(s)`);
+    return parts.join(' · ');
   }
   const segCount = (state: Record<string, unknown>) => (Array.isArray(state.seg) ? state.seg.length : 0);
 
@@ -64,10 +81,16 @@
   }
 </script>
 
+{#if editing !== undefined}
+  <SceneEditor scene={editing} onclose={closeEditor} />
+{:else}
 <div class="stack">
   <form class="panel" onsubmit={capture}>
     <h2>Capture the current look</h2>
-    <p class="muted small">Set the lights how you want them (in WLED's own app for now), then save that as a scene.</p>
+    <p class="muted small">
+      Save whatever the lights show right now as a scene, then fine-tune it with Edit. Or
+      <button type="button" class="link" onclick={() => (editing = null)}>start an empty scene</button>.
+    </p>
     <div class="row">
       <input placeholder="Scene name, e.g. Tavern" bind:value={newName} style="flex: 1" />
       <button class="primary" disabled={busy || !newName.trim()}>Save as scene</button>
@@ -94,6 +117,8 @@
         <span class="muted small">{lightsSummary(s)}</span>
         <div class="row">
           <button class="primary" disabled={busy} onclick={() => run(() => api.activateScene(s.id))}>Show</button>
+          <button disabled={busy} onclick={() => (editing = s)}>Edit</button>
+          <button disabled={busy} onclick={() => duplicate(s)}>Duplicate</button>
           <button disabled={busy} onclick={() => ((renaming = s.id), (renameTo = s.name))}>Rename</button>
           <button class="danger" disabled={busy} onclick={() => save(scenes.filter((x) => x.id !== s.id))}>Delete</button>
         </div>
@@ -103,6 +128,7 @@
     {/each}
   </section>
 </div>
+{/if}
 
 <style>
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0.75rem; }
@@ -110,4 +136,5 @@
   .scene.active { border-color: var(--accent); }
   .swatch { display: flex; height: 0.6rem; border-radius: 4px; overflow: hidden; background: var(--panel-2); }
   .swatch span { flex: 1; }
+  .link { background: none; border: none; padding: 0; color: var(--accent); text-decoration: underline; }
 </style>

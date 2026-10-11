@@ -8,10 +8,11 @@ Tabledux runs on a Raspberry Pi built into a boardgame/RPG table. It drives the 
 - [docs/architecture.md](docs/architecture.md): architecture and build order
 - [docs/pi-setup.md](docs/pi-setup.md): installing on the Pi
 
-## What works today (step 1, walking skeleton)
+## What works today (steps 1 and 2)
 
-- Add WLED controllers and see whether they're online.
+- Add WLED controllers and Home Assistant, and see whether they're online.
 - **Scenes:** capture whatever the lights are showing as a named scene, then show it again with one click.
+- **Scene editor:** change segments, colours, effects, palettes, speed and brightness with a live preview on the table, or use a WLED preset instead. A scene can cover several controllers, also run Home Assistant scenes/scripts/lights, and have hotkeys assigned from the same screen.
 - **Bindings:** "when this happens, do that". Record a hotkey from the table keyboard and bind it to a scene, a WLED preset, all-off or a mode change.
 - **Hotkeys** read straight from the Pi's keyboard, with no window needed.
 - **API** for anything else: `POST /api/events` with `{"type":"key.down","data":{"key":"F5"}}`, or any custom event type, triggers bindings the same way.
@@ -22,6 +23,7 @@ Tabledux runs on a Raspberry Pi built into a boardgame/RPG table. It drives the 
 ```sh
 npm install
 npm run fake-wled          # a pretend WLED on localhost:8090 if you have no hardware handy
+npm run fake-ha            # a pretend Home Assistant on localhost:8123 (token: dev-token)
 npm run build && npm start # server + built UI on http://localhost:8080
 # or, for UI work with hot reload:
 npm run dev                # server (one terminal)
@@ -34,8 +36,9 @@ Layout:
 ```
 packages/core     events, bindings engine, config schemas (no I/O)
 packages/wled     WLED JSON API client and light driver
+packages/homeassistant  Home Assistant REST client
 packages/server   Fastify server, config store, adapters (keyboard), REST + websocket
 packages/web      Svelte UI
-tools/            fake-wled.mjs
+tools/            fake-wled.mjs, fake-ha.mjs
 deploy/           systemd unit
 ```

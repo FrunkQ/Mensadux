@@ -1,4 +1,4 @@
-import type { Action, Binding, Device, Scene, TableSnapshot } from './types';
+import type { Action, Binding, Device, DeviceCatalog, LightTarget, Scene, TableSnapshot } from './types';
 
 async function call<T>(method: string, path: string, body?: unknown): Promise<T> {
   const res = await fetch(path, {
@@ -15,8 +15,13 @@ export const api = {
   devices: () => call<Device[]>('GET', '/api/devices'),
   saveDevices: (d: Device[]) => call<Device[]>('PUT', '/api/devices', d),
   refreshDevices: () => call('POST', '/api/devices/refresh'),
+  catalog: (id: string) => call<DeviceCatalog>('GET', `/api/devices/${encodeURIComponent(id)}/catalog`),
+  captureDevice: (id: string) => call<LightTarget>('POST', `/api/devices/${encodeURIComponent(id)}/capture`),
+  preview: (id: string, t: LightTarget) => call('POST', `/api/devices/${encodeURIComponent(id)}/preview`, t),
+  saveToken: (id: string, token: string) => call('PUT', `/api/devices/${encodeURIComponent(id)}/token`, { token }),
   scenes: () => call<Scene[]>('GET', '/api/scenes'),
   saveScenes: (s: Scene[]) => call<Scene[]>('PUT', '/api/scenes', s),
+  saveScene: (s: Omit<Scene, 'id'> & { id?: string }) => call<Scene>('POST', '/api/scenes', s),
   captureScene: (name: string) => call<Scene>('POST', '/api/scenes/capture', { name }),
   activateScene: (id: string) => call('POST', `/api/scenes/${encodeURIComponent(id)}/activate`),
   lightsOff: () => call('POST', '/api/lights/off'),
