@@ -1,7 +1,7 @@
 import { createReadStream } from 'node:fs';
 import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
-import type { EventBus } from '@tabledux/core';
+import type { EventBus } from '@mensadux/core';
 import { KEY_NAMES } from './keycodes.js';
 
 /**
@@ -46,7 +46,7 @@ export async function startKeyboard(
   if (setting === 'off') return;
   const paths = setting === 'auto' ? await findKeyboards() : [setting];
   if (paths.length === 0) {
-    log.info('Keyboard hotkeys: no keyboard found under /dev/input/by-id (set TABLEDUX_KEYBOARD to a device path)');
+    log.info('Keyboard hotkeys: no keyboard found under /dev/input/by-id (set MENSADUX_KEYBOARD to a device path)');
     return;
   }
   for (const path of paths) {

@@ -1,0 +1,24 @@
+# systemd unit for running Mensadux on the Pi at boot.
+# Install: see docs/pi-setup.md
+[Unit]
+Description=Mensadux table server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=mensadux
+Group=mensadux
+# "input" lets Mensadux read the keyboard for hotkeys without root.
+SupplementaryGroups=input
+WorkingDirectory=/opt/mensadux
+Environment=NODE_ENV=production
+Environment=MENSADUX_DATA=/var/lib/mensadux
+Environment=MENSADUX_PORT=8080
+ExecStart=/usr/bin/node packages/server/dist/main.js
+Restart=on-failure
+RestartSec=3
+StateDirectory=mensadux
+
+[Install]
+WantedBy=multi-user.target

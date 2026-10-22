@@ -1,4 +1,4 @@
-# Tabledux: architecture proposal (draft 1)
+# Mensadux: architecture proposal (draft 1)
 
 *Companion app to Mappadux. Proposal for review, nothing is built yet. Requirements are in [requirements.md](requirements.md); requirement numbers (R1…R26) refer to it.*
 
@@ -43,9 +43,9 @@ The **bindings engine** is the heart of "configurable not unique": the GM puck, 
 
 Two layers, composed per LED run:
 1. **Background** = the active scene. Uses WLED's own effects/presets (cheap, rich, runs on the controller).
-2. **Overlays** = seats, turn, timers, alerts. Implemented as **WLED segments** laid over the background segment, set via the JSON API (`/json/state`). That's what GameTableWLED did, minus the hand-numbered segment juggling: the engine allocates segments from the geometry and seats automatically.
+2. **Overlays** = seats, turn, timers, alerts. Implemented as **WLED segments** laid over the background segment, set via the JSON API (`/json/state`). That's what GameTableWLED did, minus the hand-numbered segment juggling: the engine allocates segments from the geometry and seats automatically. Segment ids from each WLED device's `overlayBase` (default 10) upward belong to overlays; scenes use the ids below it. WLED draws later segments on top, so overlays sit over the scene, and after a preset recall they are redrawn once the preset has loaded.
 
-Plus a **stream mode** for things WLED effects can't do: Tabledux renders pixels itself and streams them over WLED's realtime **DDP** protocol (UDP 4048). It's used for position detection (exact Gray-code frames) and later for fancy custom effects. WLED drops back to its own state when the stream stops.
+Plus a **stream mode** for things WLED effects can't do: Mensadux renders pixels itself and streams them over WLED's realtime **DDP** protocol (UDP 4048). It's used for position detection (exact Gray-code frames) and later for fancy custom effects. WLED drops back to its own state when the stream stops.
 
 Driver interface (sketch):
 ```ts
@@ -64,21 +64,21 @@ WLED is the first driver. A **Plasma 2350 W** driver later is just another imple
 - **Hardware track** (parallel, starts after the core works): ESP32-C3 or C6 class board, LiPo, LDR (or a better phototransistor) behind the light pipe, 1–2 buttons, deep sleep with wake on button.
 - **Radio: ESP-NOW to a USB "puck hub"** (a spare ESP32 plugged into the Pi). Why: no Wi-Fi join on wake, so a press reaches the table in tens of milliseconds and the puck goes back to sleep at once, which is the best battery life. The hub speaks JSON lines over USB serial to the Puck adapter. BLE is the fallback if ESP-NOW disappoints; the adapter interface hides which.
 - **Messages:** `hello {id, fw, battery}`, `press {id, button, kind, seq}`, `locate.result {id, code, quality}`.
-- **Position detection, puck-initiated** (pucks sleep, so the table can't call them): long-press in setup mode → puck sends `locate.request` → Tabledux streams a Gray-coded stripe sequence (sync frames + ~8 bits + parity, building on Table2019) → puck samples its LDR in time with the frames and returns the code → Tabledux maps code → mm → seat. A repeat pass or parity bit catches bad reads.
+- **Position detection, puck-initiated** (pucks sleep, so the table can't call them): long-press in setup mode → puck sends `locate.request` → Mensadux streams a Gray-coded stripe sequence (sync frames + ~8 bits + parity, building on Table2019) → puck samples its LDR in time with the frames and returns the code → Mensadux maps code → mm → seat. A repeat pass or parity bit catches bad reads.
 - **Roles:** a puck is either bound to a seat or flagged as the **GM puck**. Bindings decide what each press means.
 - **Fallback:** every puck action also exists as a phone button and a hotkey (R11).
 
 ## 5. Mappadux link
 
 Mappadux is browser-only and peer-to-peer, with no inbound API. Two facts shape the link:
-- Mappadux is served from **https**://mappadux.com, and browsers block calls from an https page to a plain-**http** LAN address (mixed content). That blocks a simple `ws://tabledux.local` connection, and **it probably also stops Stagecraft's WLED calls working from mappadux.com**, which would fit with it never having been tested.
+- Mappadux is served from **https**://mappadux.com, and browsers block calls from an https page to a plain-**http** LAN address (mixed content). That blocks a simple `ws://mensadux.local` connection, and **it probably also stops Stagecraft's WLED calls working from mappadux.com**, which would fit with it never having been tested.
 - Mappadux already has guests (players, projectors) joining over WebRTC by room code.
 
-**Recommendation:** add a **"table" guest role** to Mappadux. Tabledux joins the GM's session like a projector does (Node WebRTC via `node-datachannel`, or a headless browser as a fallback). Over that channel:
-- Mappadux → Tabledux: `initiative.state {order, active}` (with Mappadux player ↔ seat mapping), `map.loaded {mapId}` (so maps can trigger table scenes), player colours.
-- Tabledux → Mappadux: `initiative.next` (from a puck), `scene.request`, later pings/seat events.
+**Recommendation:** add a **"table" guest role** to Mappadux. Mensadux joins the GM's session like a projector does (Node WebRTC via `node-datachannel`, or a headless browser as a fallback). Over that channel:
+- Mappadux → Mensadux: `initiative.state {order, active}` (with Mappadux player ↔ seat mapping), `map.loaded {mapId}` (so maps can trigger table scenes), player colours.
+- Mensadux → Mappadux: `initiative.next` (from a puck), `scene.request`, later pings/seat events.
 
-Both sides share the message types in a small **`@tabledux/protocol`** package, so Mappadux just imports it.
+Both sides share the message types in a small **`@mensadux/protocol`** package, so Mappadux just imports it.
 
 ## 6. Tech stack (defaults, easy to change)
 
@@ -91,7 +91,7 @@ Both sides share the message types in a small **`@tabledux/protocol`** package, 
 - **Puck firmware:** PlatformIO (Arduino or ESP-IDF) in the same repo under `firmware/`.
 
 ```
-tabledux/
+mensadux/
   packages/
     core/        events, bindings engine, modes, state machines, schemas
     protocol/    shared message types (also used by Mappadux)
@@ -123,4 +123,4 @@ tabledux/
 1. **Mappadux link via a "table" guest role** (recommended) vs. self-hosting Mappadux on the Pi over http so a plain WebSocket works.
 2. **Puck radio:** ESP-NOW + USB hub (recommended) vs. BLE straight to the Pi.
 3. **UI framework:** Svelte (recommended) vs. matching whatever Mappadux uses (vanilla TS).
-4. **Repo:** `FrunkQ/tabledux`, which you'd need to create, since I can't create repos from here.
+4. **Repo:** `FrunkQ/mensadux`, which you'd need to create, since I can't create repos from here.

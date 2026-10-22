@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // A pretend Home Assistant for developing without one.
 // Usage: node tools/fake-ha.mjs [port]   (default 8123). The token is "dev-token".
-// Add "localhost:8123" as a Home Assistant device in Tabledux and paste dev-token.
+// Add "localhost:8123" as a Home Assistant device in Mensadux and paste dev-token.
 import { createServer } from 'node:http';
 
 const port = Number(process.argv[2] ?? 8123);

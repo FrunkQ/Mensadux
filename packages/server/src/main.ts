@@ -13,14 +13,14 @@ const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(here, '../../..');
 
 const settings = {
-  port: Number(process.env.TABLEDUX_PORT ?? 8080),
-  host: process.env.TABLEDUX_HOST ?? '0.0.0.0',
-  dataDir: resolve(process.env.TABLEDUX_DATA ?? join(repoRoot, 'data')),
-  keyboard: process.env.TABLEDUX_KEYBOARD ?? 'auto',
-  webDir: resolve(process.env.TABLEDUX_WEB ?? join(repoRoot, 'packages/web/dist')),
+  port: Number(process.env.MENSADUX_PORT ?? 8080),
+  host: process.env.MENSADUX_HOST ?? '0.0.0.0',
+  dataDir: resolve(process.env.MENSADUX_DATA ?? join(repoRoot, 'data')),
+  keyboard: process.env.MENSADUX_KEYBOARD ?? 'auto',
+  webDir: resolve(process.env.MENSADUX_WEB ?? join(repoRoot, 'packages/web/dist')),
 };
 
-const app = Fastify({ logger: { level: process.env.TABLEDUX_LOG ?? 'info' } });
+const app = Fastify({ logger: { level: process.env.MENSADUX_LOG ?? 'info' } });
 const log = app.log;
 
 const config = new ConfigStore(settings.dataDir);

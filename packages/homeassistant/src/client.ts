@@ -1,6 +1,6 @@
 /**
  * Home Assistant REST client. Adapted from Mappadux's Stagecraft
- * haClient.ts (untested there). Tabledux doesn't author HA entities:
+ * haClient.ts (untested there). Mensadux doesn't author HA entities:
  * you build scenes and scripts in Home Assistant, then pick them here.
  *
  * Endpoints:
