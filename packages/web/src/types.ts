@@ -1,4 +1,4 @@
-// Mirrors @tabledux/core types the UI needs. Kept local so the browser bundle doesn't pull in zod.
+// Mirrors @mensadux/core types the UI needs. Kept local so the browser bundle doesn't pull in zod.
 export interface TableEvent {
   type: string;
   source: string;

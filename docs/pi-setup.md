@@ -1,4 +1,4 @@
-# Running Tabledux on a Raspberry Pi
+# Running Mensadux on a Raspberry Pi
 
 Target: Raspberry Pi 400 / Pi 4 / Pi 5 with Raspberry Pi OS (64-bit, Bookworm or later).
 
@@ -10,12 +10,12 @@ sudo apt-get install -y nodejs git
 node -v   # v22.x
 ```
 
-## 2. Get and build Tabledux
+## 2. Get and build Mensadux
 
 ```sh
-sudo git clone https://github.com/FrunkQ/Tabledux.git /opt/tabledux
-sudo chown -R $USER /opt/tabledux
-cd /opt/tabledux
+sudo git clone https://github.com/FrunkQ/Tabledux.git /opt/mensadux
+sudo chown -R $USER /opt/mensadux
+cd /opt/mensadux
 npm ci
 npm run build
 ```
@@ -23,7 +23,7 @@ npm run build
 ## 3. Try it by hand
 
 ```sh
-TABLEDUX_DATA=./data npm start
+MENSADUX_DATA=./data npm start
 ```
 
 Open `http://<pi-address>:8080` from any phone or laptop on the same network. On the Pi 400 itself, press a key: it should show under **Status → Recent events**. If it doesn't, your user needs to be in the `input` group (`sudo usermod -aG input $USER`, then log out and back in).
@@ -31,15 +31,15 @@ Open `http://<pi-address>:8080` from any phone or laptop on the same network. On
 ## 4. Run it at boot
 
 ```sh
-sudo useradd --system --no-create-home --groups input tabledux
-sudo chown -R tabledux /opt/tabledux
-sudo cp deploy/tabledux.service /etc/systemd/system/
+sudo useradd --system --no-create-home --groups input mensadux
+sudo chown -R mensadux /opt/mensadux
+sudo cp deploy/mensadux.service /etc/systemd/system/
 sudo systemctl daemon-reload
-sudo systemctl enable --now tabledux
-journalctl -u tabledux -f    # logs
+sudo systemctl enable --now mensadux
+journalctl -u mensadux -f    # logs
 ```
 
-Config lives in `/var/lib/tabledux` (`devices.json`, `scenes.json`, `bindings.json`). Back that folder up and you've backed up the table. Access tokens (Home Assistant) are kept separately in `secrets.json` in the same folder, readable only by the service user, and are never sent to the web UI.
+Config lives in `/var/lib/mensadux` (`devices.json`, `scenes.json`, `bindings.json`). Back that folder up and you've backed up the table. Access tokens (Home Assistant) are kept separately in `secrets.json` in the same folder, readable only by the service user, and are never sent to the web UI.
 
 ## Settings
 
@@ -47,14 +47,14 @@ All optional, set as environment variables (in the service file or your shell):
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `TABLEDUX_PORT` | `8080` | Web UI and API port |
-| `TABLEDUX_HOST` | `0.0.0.0` | Interface to listen on |
-| `TABLEDUX_DATA` | `./data` | Config folder |
-| `TABLEDUX_KEYBOARD` | `auto` | `auto` finds keyboards under `/dev/input/by-id`; a device path picks one; `off` disables hotkeys |
-| `TABLEDUX_LOG` | `info` | Log level |
+| `MENSADUX_PORT` | `8080` | Web UI and API port |
+| `MENSADUX_HOST` | `0.0.0.0` | Interface to listen on |
+| `MENSADUX_DATA` | `./data` | Config folder |
+| `MENSADUX_KEYBOARD` | `auto` | `auto` finds keyboards under `/dev/input/by-id`; a device path picks one; `off` disables hotkeys |
+| `MENSADUX_LOG` | `info` | Log level |
 
 ## Updating
 
 ```sh
-cd /opt/tabledux && git pull && npm ci && npm run build && sudo systemctl restart tabledux
+cd /opt/mensadux && git pull && npm ci && npm run build && sudo systemctl restart mensadux
 ```

@@ -30,7 +30,7 @@
 </script>
 
 <header>
-  <strong class="brand">Tabledux</strong>
+  <strong class="brand">Mensadux</strong>
   <nav>
     {#each tabs as t}
       <button class:active={current === t.id} onclick={() => go(t.id)}>{t.label}</button>

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // A pretend WLED controller for developing without hardware.
 // Usage: node tools/fake-wled.mjs [port]   (default 8090)
-// Then add "localhost:8090" as a device in Tabledux.
+// Then add "localhost:8090" as a device in Mensadux.
 import { createServer } from 'node:http';
 
 const port = Number(process.argv[2] ?? 8090);

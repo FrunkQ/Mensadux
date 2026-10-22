@@ -1,5 +1,5 @@
 {
-  "name": "tabledux",
+  "name": "mensadux",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -11,9 +11,9 @@
     "packages/web"
   ],
   "scripts": {
-    "build": "npm run build -w @tabledux/core && npm run build -w @tabledux/wled && npm run build -w @tabledux/homeassistant && npm run build -w @tabledux/server && npm run build -w @tabledux/web",
-    "dev": "npm run build -w @tabledux/core && npm run build -w @tabledux/wled && npm run build -w @tabledux/homeassistant && npm run dev -w @tabledux/server",
-    "dev:web": "npm run dev -w @tabledux/web",
+    "build": "npm run build -w @mensadux/core && npm run build -w @mensadux/wled && npm run build -w @mensadux/homeassistant && npm run build -w @mensadux/server && npm run build -w @mensadux/web",
+    "dev": "npm run build -w @mensadux/core && npm run build -w @mensadux/wled && npm run build -w @mensadux/homeassistant && npm run dev -w @mensadux/server",
+    "dev:web": "npm run dev -w @mensadux/web",
     "start": "node packages/server/dist/main.js",
     "test": "vitest run",
     "typecheck": "npm run typecheck --workspaces --if-present",

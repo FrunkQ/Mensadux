@@ -11,7 +11,7 @@ import {
   type Scene,
   type Secrets,
   type TableLayout,
-} from '@tabledux/core';
+} from '@mensadux/core';
 import type { z } from 'zod';
 
 /**

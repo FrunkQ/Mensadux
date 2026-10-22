@@ -1,4 +1,4 @@
-import type { LightCatalog, LightDriver, LightInfo, LightTarget, OverlaySegment } from '@tabledux/core';
+import type { LightCatalog, LightDriver, LightInfo, LightTarget, OverlaySegment } from '@mensadux/core';
 import { WledClient, type WledState } from './client.js';
 
 /**

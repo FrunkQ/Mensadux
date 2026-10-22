@@ -1,6 +1,6 @@
-# Tabledux: legacy walkthrough and requirements (draft 3)
+# Mensadux: legacy walkthrough and requirements (draft 3)
 
-*Working name: **Tabledux**, the table companion app to Mappadux. Nothing here is set in stone.*
+*Working name: **Mensadux**, the table companion app to Mappadux. Nothing here is set in stone.*
 
 Sources: **GameTableWLED** (GitHub, the PC app in use today), **dynamic-map-renderer-v2 / Mappadux** (GitHub) and the **Legacy folder** (C:\Development\gamingtablev2\Legacy, read 2026-10-09). The Legacy folder turned out to hold only the 2018–2019 LED driver work, so the ESP32 puck, LDR, RFID and rules sections still rest on Alex's description and GameTableWLED.
 
@@ -86,7 +86,7 @@ No notes, wishlists, puck firmware, LDR code, RFID or rules live here. What's th
 **Screens**
 20. Mappadux stays the screen/map app; the table and Mappadux exchange events (map loaded → scene; scene/card → map). Move Stagecraft's WLED/HA control into the table so there is one owner of the lights. In the other direction, **Syrinscape moves into Mappadux**: GameTableWLED's online-player calls (mood play/stop and global volume via `syrinscape.com/online/frontend-api/...` with an auth token, plus the moods CSV export) become a Mappadux soundtrack source. Before building it, check whether that API allows browser (CORS) calls, because Mappadux has no backend; if it doesn't, the table server can proxy the calls.
 21. A small touchscreen on the table for the GM/host with minimal distraction.
-22. **Initiative link with Mappadux:** Mappadux owns initiative order. Tabledux lights the seat of whoever's turn it is in initiative (and dims the rest). A puck press of "done" from the current player or the GM tells Mappadux to advance. This needs Mappadux to accept inbound messages (it has none today): either Tabledux joins the session as a PeerJS guest, or a small local WebSocket bridge does.
+22. **Initiative link with Mappadux:** Mappadux owns initiative order. Mensadux lights the seat of whoever's turn it is in initiative (and dims the rest). A puck press of "done" from the current player or the GM tells Mappadux to advance. This needs Mappadux to accept inbound messages (it has none today): either Mensadux joins the session as a PeerJS guest, or a small local WebSocket bridge does.
 23. **GM puck:** a puck with a GM role, not tied to a player seat. It can advance initiative or turns, and its button actions differ from a player's (pause, override, skip).
 
 **Preset / scene editor (a first-class UI, not an afterthought)**
@@ -98,11 +98,11 @@ No notes, wishlists, puck firmware, LDR code, RFID or rules live here. What's th
 - Puck: never built, only feasibility tests. Clean-slate design.
 - The strip runs on **WLED now**. There's **1 WLED controller** today, with a few more planned.
 - RPG needs beyond Mappadux: mostly the initiative link above, plus a GM puck.
-- Sound and atmosphere: Mappadux. Stagecraft was never tested, and lights and home automation move to Tabledux.
+- Sound and atmosphere: Mappadux. Stagecraft was never tested, and lights and home automation move to Mensadux.
 - Scene editing UI should be good this time (req. 24–26).
 
 ## 5. Ideas to consider (not decisions)
-- **Seat-aware everything:** once pucks know their seat, Mappadux could rotate a player's handouts or pings toward their side of the table, and Tabledux could flash a seat when Mappadux messages that player.
+- **Seat-aware everything:** once pucks know their seat, Mappadux could rotate a player's handouts or pings toward their side of the table, and Mensadux could flash a seat when Mappadux messages that player.
 - **"Who's holding us up" timer:** per-seat turn timers shown as a slowly filling bar on that seat's LEDs, with stats at the end of the game.
 - **Puck as the only input most nights:** long-press = menu mode, where the table LEDs become a radial menu around your seat and short presses step through it. That gives a lot of actions from one button without a phone.
 - **Game presets from BoardGameGeek:** start a game definition from a BGG id (player counts, name, art) and only fill in the turn rules by hand.

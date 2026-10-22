@@ -8,7 +8,7 @@ import {
   TableEventSchema,
   TableLayoutSchema,
   slugId,
-} from '@tabledux/core';
+} from '@mensadux/core';
 import { z } from 'zod';
 import type { Table } from './table.js';
 

@@ -12,9 +12,9 @@ import {
   type Scene,
   type TableEvent,
   type TableLayout,
-} from '@tabledux/core';
-import { WledDriver } from '@tabledux/wled';
-import { HaClient, defaultService, type HaEntity } from '@tabledux/homeassistant';
+} from '@mensadux/core';
+import { WledDriver } from '@mensadux/wled';
+import { HaClient, defaultService, type HaEntity } from '@mensadux/homeassistant';
 import type { ConfigStore } from './config-store.js';
 
 export interface DeviceStatus {
