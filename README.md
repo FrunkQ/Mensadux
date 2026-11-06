@@ -20,9 +20,13 @@ Mensadux runs on a Raspberry Pi built into a boardgame/RPG table. It drives the 
 - **API** for anything else: `POST /api/events` with `{"type":"key.down","data":{"key":"F5"}}`, or any custom event type, triggers bindings the same way.
 - A live event log showing every input and what it triggered.
 
+So far this has been tested against the pretend WLED and Home Assistant in `tools/`, not yet on the real table.
+
 ## Developing
 
 ```sh
+git clone https://github.com/FrunkQ/Mensadux.git
+cd Mensadux
 npm install
 npm run fake-wled          # a pretend WLED on localhost:8090 if you have no hardware handy
 npm run fake-ha            # a pretend Home Assistant on localhost:8123 (token: dev-token)

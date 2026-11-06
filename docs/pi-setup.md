@@ -13,7 +13,7 @@ node -v   # v22.x
 ## 2. Get and build Mensadux
 
 ```sh
-sudo git clone https://github.com/FrunkQ/Tabledux.git /opt/mensadux
+sudo git clone https://github.com/FrunkQ/Mensadux.git /opt/mensadux
 sudo chown -R $USER /opt/mensadux
 cd /opt/mensadux
 npm ci
